@@ -1,5 +1,9 @@
 # 📈 Stock Market Data Pipeline Dashboard
 
+## Dashboard Preview
+
+![Dashboard](images/dashboard.png)
+
 ## Overview
 
 This project is an end-to-end Data Engineering pipeline that extracts stock market data from Yahoo Finance, stores it in PostgreSQL using Docker, and visualizes key metrics in Grafana.
@@ -188,6 +192,7 @@ http://localhost:3000
 | Highest Price | 317 |
 | Lowest Price | 307 |
 | Price Change % | -2.49% |
+
 
 ---
 
