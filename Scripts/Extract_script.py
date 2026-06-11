@@ -2,42 +2,46 @@ import yfinance as yf
 import psycopg2
 
 # Download stock data
-ticker = yf.Ticker("AAPL")
-df = ticker.history(period="5d")
-
-print(df)
+tickers = ["AAPL", "MSFT", "GOOGL", "NVDA"]
 
 # PostgreSQL connection
 conn = psycopg2.connect(
-    host="127.0.0.1",
-    port=5433,
-    database="stocks",
-    user="admin",
-    password="admin123"
-)
+        host="127.0.0.1",
+        port=5433,
+        database="stocks",
+        user="admin",
+        password="admin123"
+    )
+cur = conn.cursor()
 
-cursor = conn.cursor()
+for symbol in tickers:
+    ticker = yf.Ticker(symbol)
+    df = ticker.history(period="2y")
+    df = df.dropna(subset=["Open", "High", "Low", "Close"])
+    #print(df.head())
+    #print(df.tail())
+    #print("Rows:", len(df))
 
-# Insert data
-for index, row in df.iterrows():
-    cursor.execute("""
-        INSERT INTO stock_prices
-        (ticker, trade_date, open, high, low, close, volume)
+    for index, row in df.iterrows():
+
+        cur.execute("""
+        INSERT INTO stocks
+        (ticker, date, open, high, low, close, volume)
         VALUES (%s,%s,%s,%s,%s,%s,%s)
+        ON CONFLICT (ticker, date)
+        DO NOTHING
     """,
     (
-        "AAPL",
-        index.date(),
+        symbol,
+        index.to_pydatetime(),
         float(row["Open"]),
         float(row["High"]),
         float(row["Low"]),
         float(row["Close"]),
         int(row["Volume"])
     ))
+    print(f"Finished loading {symbol}")
 
 conn.commit()
-
-print("Data inserted successfully!")
-
-cursor.close()
+cur.close()
 conn.close()
